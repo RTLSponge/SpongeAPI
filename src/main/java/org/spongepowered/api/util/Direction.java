@@ -26,7 +26,6 @@
 package org.spongepowered.api.util;
 
 import static org.spongepowered.api.math.Vectors.create3d;
-
 import org.spongepowered.api.math.Vector3d;
 
 public enum Direction {
@@ -52,7 +51,7 @@ public enum Direction {
     SOUTH_SOUTHEAST (create3d( C.S8,    0,  C.C8    ), Flag.SECONDARY_ORDINAL),
     SOUTH_SOUTHWEST (create3d(-C.S8,    0,  C.C8    ), Flag.SECONDARY_ORDINAL);
 
-    private interface C{
+    private interface C {
         public static final double C8 = Math.cos(Math.PI / 8);
         public static final double S8 = Math.sin(Math.PI / 8);
     }
@@ -85,7 +84,7 @@ public enum Direction {
         SOUTH_SOUTHWEST.opposite = NORTH_NORTHEAST;
     }
     private Direction getOpposite(){
-        return opposite;
+        return this.opposite;
     }
 
     private boolean isOpposite(Direction d){
