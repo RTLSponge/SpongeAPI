@@ -83,11 +83,11 @@ public enum Direction {
         SOUTH_SOUTHEAST.opposite = NORTH_NORTHWEST;
         SOUTH_SOUTHWEST.opposite = NORTH_NORTHEAST;
     }
-    private Direction getOpposite(){
+    public Direction getOpposite(){
         return this.opposite;
     }
 
-    private boolean isOpposite(Direction d){
+    public boolean isOpposite(Direction d){
         return this.opposite.equals(d);
     }
 
