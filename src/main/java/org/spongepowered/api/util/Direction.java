@@ -61,7 +61,9 @@ public enum Direction {
     NORTH_NORTHWEST (create3d(-C.S8,    0, -C.C8    ), Flag.SECONDARY_ORDINAL),
 
     UP              (create3d( 0,       1,  0       ), Flag.UPRIGHT          ),
-    DOWN            (create3d( 0,      -1,  0       ), Flag.UPRIGHT          );
+    DOWN            (create3d( 0,      -1,  0       ), Flag.UPRIGHT          ),
+
+    NONE            (create3d( 0,       0,  0       ), 0                     );
 
     private interface C {
         public static final double C8 = Math.cos(Math.PI / 8);
@@ -85,6 +87,8 @@ public enum Direction {
 
         UP.opposite    = DOWN;
         DOWN.opposite  = UP;
+
+        NONE.opposite = NONE;
 
         NORTHEAST.opposite = SOUTHWEST;
         NORTHWEST.opposite = SOUTHEAST;
@@ -162,7 +166,7 @@ public enum Direction {
 
     /**
      * Gets the closest horizontal direction from the given vector. If the
-     * vector is the 0-Vector, this method returns {@link #NORTH}. If the vector
+     * vector is the 0-Vector, this method returns {@link #NONE}. If the vector
      * has the same horizontal and vertical length, a horizontal direction will
      * be returned. If the vector has the same angle to two directions the
      * clockwise next will be selected.
@@ -182,7 +186,7 @@ public enum Direction {
 
     /**
      * Gets the closest horizontal direction from the given vector. If the
-     * vector is the 0-Vector, this method returns {@link #NORTH}. If the vector
+     * vector is the 0-Vector, this method returns {@link #NONE}. If the vector
      * has the same angle to two directions the clockwise next will be selected.
      * 
      * @param vector The vector to convert to a direction
@@ -190,7 +194,9 @@ public enum Direction {
      */
     public static Direction getClosestHorizonal(Vector3d vector) {
         if (vector.getX() == 0) {
-            if (vector.getZ() <= 0) {
+            if (vector.getZ() == 0) {
+                return NONE;
+            } else if (vector.getZ() < 0) {
                 return NORTH;
             } else {
                 return SOUTH;
@@ -199,6 +205,32 @@ public enum Direction {
             final double angle = Math.atan(vector.getZ() / -vector.getX());
             final int ordinal = (int) (angle * 8 / Math.PI + 16.5) % 16;
             return values()[ordinal];
+        }
+    }
+
+    public static Direction getFromAxis(final Axis axis) {
+        switch (axis) {
+            case X :
+                return SOUTH;
+            case Y :
+                return UP;
+            case Z :
+                return EAST;
+            default :
+                throw new IllegalStateException("Not capable of handling the " + axis.name() + " axis!");
+        }
+    }
+
+    public static Direction getFromAxis(final Axis axis, final AxisDirection direction) {
+        switch (direction) {
+            case PLUS :
+                return getFromAxis(axis);
+            case ZERO :
+                return NONE;
+            case MINUS :
+                return getFromAxis(axis).getOpposite();
+            default :
+                throw new IllegalStateException("Not capable of handling the " + direction.name() + " direction!");
         }
     }
 
