@@ -22,43 +22,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.spongepowered.api.util;
 
 import static org.spongepowered.api.math.Vectors.create3d;
 import org.spongepowered.api.math.Vector3d;
 
+/**
+ * Represent the 16 main and secondary cardinal directions plus up and down.
+ * With the following assumptions:
+ * <ul>
+ * <li>{@link #NORTH} targeting towards -X</li>
+ * <li>{@link #EAST}  targeting towards +Z</li>
+ * <li>{@link #SOUTH} targeting towards +X</li>
+ * <li>{@link #WEST}  targeting towards -Z</li>
+ * <li>{@link #UP}    targeting towards +Y</li>
+ * <li>{@link #DOWN}  targeting towards -Y</li>
+ * </ul>
+ */
 public enum Direction {
     NORTH           (create3d( 0,       0, -1       ), Flag.CARDINAL         ),
+    NORTH_NORTHEAST (create3d( C.S8,    0, -C.C8    ), Flag.SECONDARY_ORDINAL),
+    NORTHEAST       (create3d( 1,       0, -1       ), Flag.ORDINAL          ),
+    EAST_NORTHEAST  (create3d( C.C8,    0, -C.S8    ), Flag.SECONDARY_ORDINAL),
+
     EAST            (create3d( 1,       0,  0       ), Flag.CARDINAL         ),
+    EAST_SOUTHEAST  (create3d( C.C8,    0,  C.S8    ), Flag.SECONDARY_ORDINAL),
+    SOUTHEAST       (create3d( 1,       0,  1       ), Flag.ORDINAL          ),
+    SOUTH_SOUTHEAST (create3d( C.S8,    0,  C.C8    ), Flag.SECONDARY_ORDINAL),
+
     SOUTH           (create3d( 0,       0,  1       ), Flag.CARDINAL         ),
+    SOUTH_SOUTHWEST (create3d(-C.S8,    0,  C.C8    ), Flag.SECONDARY_ORDINAL),
+    SOUTHWEST       (create3d(-1,       0,  1       ), Flag.ORDINAL          ),
+    WEST_SOUTHWEST  (create3d(-C.C8,    0,  C.S8    ), Flag.SECONDARY_ORDINAL),
+
     WEST            (create3d(-1,       0,  0       ), Flag.CARDINAL         ),
+    WEST_NORTHWEST  (create3d(-C.C8,    0, -C.S8    ), Flag.SECONDARY_ORDINAL),
+    NORTHWEST       (create3d(-1,       0, -1       ), Flag.ORDINAL          ),
+    NORTH_NORTHWEST (create3d(-C.S8,    0, -C.C8    ), Flag.SECONDARY_ORDINAL),
 
     UP              (create3d( 0,       1,  0       ), Flag.UPRIGHT          ),
-    DOWN            (create3d( 0,      -1,  0       ), Flag.UPRIGHT          ),
-
-    NORTHEAST       (create3d( 1,       0, -1       ), Flag.ORDINAL          ),
-    NORTHWEST       (create3d(-1,       0, -1       ), Flag.ORDINAL          ),
-    SOUTHEAST       (create3d( 1,       0,  1       ), Flag.ORDINAL          ),
-    SOUTHWEST       (create3d(-1,       0,  1       ), Flag.ORDINAL          ),
-
-    WEST_NORTHWEST  (create3d(-C.C8,    0, -C.S8    ), Flag.SECONDARY_ORDINAL),
-    WEST_SOUTHWEST  (create3d(-C.C8,    0,  C.S8    ), Flag.SECONDARY_ORDINAL),
-    NORTH_NORTHWEST (create3d(-C.S8,    0, -C.C8    ), Flag.SECONDARY_ORDINAL),
-    NORTH_NORTHEAST (create3d( C.S8,    0, -C.C8    ), Flag.SECONDARY_ORDINAL),
-    EAST_NORTHEAST  (create3d( C.C8,    0, -C.S8    ), Flag.SECONDARY_ORDINAL),
-    EAST_SOUTHEAST  (create3d( C.C8,    0,  C.S8    ), Flag.SECONDARY_ORDINAL),
-    SOUTH_SOUTHEAST (create3d( C.S8,    0,  C.C8    ), Flag.SECONDARY_ORDINAL),
-    SOUTH_SOUTHWEST (create3d(-C.S8,    0,  C.C8    ), Flag.SECONDARY_ORDINAL);
+    DOWN            (create3d( 0,      -1,  0       ), Flag.UPRIGHT          );
 
     private interface C {
         public static final double C8 = Math.cos(Math.PI / 8);
         public static final double S8 = Math.sin(Math.PI / 8);
     }
 
-    private Direction opposite;
     private final Vector3d direction;
     private final int flags;
+    private Direction opposite;
+
+    private Direction(Vector3d vector3d, int flags) {
+        this.direction = vector3d.normalize();
+        this.flags = flags;
+    }
 
     static {
         NORTH.opposite = SOUTH;
@@ -83,17 +100,13 @@ public enum Direction {
         SOUTH_SOUTHEAST.opposite = NORTH_NORTHWEST;
         SOUTH_SOUTHWEST.opposite = NORTH_NORTHEAST;
     }
-    public Direction getOpposite(){
+
+    public Direction getOpposite() {
         return this.opposite;
     }
 
-    public boolean isOpposite(Direction d){
+    public boolean isOpposite(Direction d) {
         return this.opposite.equals(d);
-    }
-
-    private Direction(Vector3d vector3d, int flags) {
-        this.direction = vector3d.normalize();
-        this.flags = flags;
     }
 
     /**
@@ -145,6 +158,48 @@ public enum Direction {
      */
     public Vector3d toVector3d() {
         return direction;
+    }
+
+    /**
+     * Gets the closest horizontal direction from the given vector. If the
+     * vector is the 0-Vector, this method returns {@link #NORTH}. If the vector
+     * has the same horizontal and vertical length, a horizontal direction will
+     * be returned. If the vector has the same angle to two directions the
+     * clockwise next will be selected.
+     * 
+     * @param vector The vector to convert to a direction
+     * @return The closest horizontal direction.
+     */
+    public static Direction getClosest(Vector3d vector) {
+        if (Math.pow(vector.getY(), 2) <= Math.pow(vector.getX(), 2) + Math.pow(vector.getZ(), 2)) {
+            return getClosestHorizonal(vector);
+        } else if (vector.getY() > 0) {
+            return UP;
+        } else {
+            return DOWN;
+        }
+    }
+
+    /**
+     * Gets the closest horizontal direction from the given vector. If the
+     * vector is the 0-Vector, this method returns {@link #NORTH}. If the vector
+     * has the same angle to two directions the clockwise next will be selected.
+     * 
+     * @param vector The vector to convert to a direction
+     * @return The closest horizontal direction.
+     */
+    public static Direction getClosestHorizonal(Vector3d vector) {
+        if (vector.getX() == 0) {
+            if (vector.getZ() <= 0) {
+                return NORTH;
+            } else {
+                return SOUTH;
+            }
+        } else {
+            final double angle = Math.atan(vector.getZ() / -vector.getX());
+            final int ordinal = (int) (angle * 8 / Math.PI + 16.5) % 16;
+            return values()[ordinal];
+        }
     }
 
     public static final class Flag {
