@@ -30,6 +30,10 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextRepresentable;
+import org.spongepowered.api.text.format.TextColor;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.ResettableBuilder;
 
 import java.util.ArrayList;
@@ -58,7 +62,7 @@ import javax.annotation.Nullable;
  * this event would be too complicated and thus may not be attempted.</p>
  */
 @SuppressWarnings("unchecked")
-public final class Cause implements Iterable<Object> {
+public final class Cause implements Iterable<Object>, TextRepresentable {
 
     /**
      * Creates a new {@link Builder} to make a new {@link Cause}.
@@ -379,6 +383,29 @@ public final class Cause implements Iterable<Object> {
             joiner.add(this.cause[i].toString());
         }
         return causeString + joiner.toString() + "}]";
+    }
+
+    @Override
+    public Text toText() {
+        TextColor key = TextColors.DARK_GREEN;
+        TextColor value = TextColors.GREEN;
+        TextColor clazz = TextColors.GOLD;
+        TextColor syntax = TextColors.GRAY;
+        Text cause = Text.of(clazz, "Cause");
+        Text context = Text.of(key, "Context");
+        Text stack = Text.of(key, "Stack");
+        final Text causes = Text.joinWith(Text.of(syntax, ", "), Arrays.stream(this.cause).map(o->Text.of(value, o)).iterator());
+        Text causeString = Text.of(
+        syntax,
+        cause,
+          "{",
+             context, "=" , Text.of(value, this.context)
+             , ", ",
+             stack, "=[",
+             causes, "]}"
+        );
+
+        return causeString;
     }
 
     private class Itr implements Iterator<Object> {

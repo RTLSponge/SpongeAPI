@@ -29,6 +29,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextRepresentable;
+import org.spongepowered.api.text.format.TextColor;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.ResettableBuilder;
 
 import java.util.Map;
@@ -43,7 +47,7 @@ import javax.annotation.Nullable;
  * Provides context for an event outside of the direct chain of causes present
  * in the event's {@link Cause}.
  */
-public final class EventContext {
+public final class EventContext implements TextRepresentable {
 
     private static final EventContext EMPTY_CONTEXT = new EventContext(ImmutableMap.of());
 
@@ -176,6 +180,26 @@ public final class EventContext {
             joiner.add("\"" + entry.getKey().getId() + "\"=" + entry.getValue().toString());
         }
         return "Context[" + joiner.toString() + "]";
+    }
+
+    @Override
+    public Text toText() {
+        final TextColor key = TextColors.DARK_GREEN;
+        final TextColor value = TextColors.GREEN;
+        final TextColor syntax = TextColors.GRAY;
+        final TextColor clazz = TextColors.GOLD;
+        final Text context = Text.of(clazz, "Context");
+
+        final Text.Builder joiner = Text.builder();
+        boolean first = true;
+        for (Map.Entry<EventContextKey<?>, Object> entry : this.entries.entrySet()) {
+            joiner.append(Text.of(Text.of(key, entry.getKey().getId()) , "=" , Text.of(value, entry.getValue())));
+            if(first) {
+                joiner.append(Text.of(", "));
+                first = false;
+            }
+        }
+        return Text.of(syntax, context, "{" , joiner.build() , "}");
     }
 
     public static final class Builder implements ResettableBuilder<EventContext, Builder> {
