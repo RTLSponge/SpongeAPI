@@ -56,4 +56,14 @@ public interface BiomeType extends CatalogType {
      */
     BiomeGenerationSettings createDefaultGenerationSettings(World world);
 
+    /**
+     * Gets the 'empty' generation settings of this biome for the given world.
+     * Note, this might not be truly empty due to some small changes Sponge makes
+     * to the populators.
+     *
+     * @param world The world the settings are being made for
+     * @return The default generation settings
+     */
+    BiomeGenerationSettings createEmptyVanillaLikeGenerationSettings(World world);
+
 }
